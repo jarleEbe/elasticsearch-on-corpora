@@ -13,9 +13,12 @@ sys.setdefaultencoding( "utf-8" )
 
 def create_index(es, index_name):
 
-   setting = {"settings":{"analysis":{"analyzer":{"delimiters_lower":{"type":"pattern","pattern":"(([.,;:\"<>$£+=!\{\}\[\]\*\(\)\?/\\#_@]+)|(\s+))", "lowercase": "true"},"delimiters_upper":{"type":"pattern","pattern":"(([.,;:\"<>$£¥€+=!%—\{\}\[\]\*\(\)\?/\\#_@\&¥]+)|(\s+))", "lowercase": "false"}}}}}
-
-   result = es.indices.create(index=index_name, body=setting)
+   settingsfile = '/home/jarlee/prog/elasticsearch-on-corpora/analyzer-settings'
+   mySetting = ''
+   with open(settingsfile, 'r') as infile:
+      mySetting = infile.read()
+   
+   result = es.indices.create(index=index_name, body=mySetting)
 
    return result
 
