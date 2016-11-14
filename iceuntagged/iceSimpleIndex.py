@@ -40,7 +40,7 @@ def split_and_index_text(es, theIndex, theType, text, code, region, lid):
           sunitDict['sunitId'] = tempid
           myNewList = tempid.split(":")
           if len(myNewList) > 1:
-              sunitDict['textId'] = myNewList[0] + myNewList[1]
+              sunitDict['textId'] = myNewList[0] + ':' + myNewList[1]
               tType = myNewList[1]
               if re.match("S", tType):
                   sunitDict['textType'] = "spoken"
@@ -65,7 +65,7 @@ def split_and_index_text(es, theIndex, theType, text, code, region, lid):
           sunitDict['sunitId'] = tempid
           myNewList = tempid.split(":")
           if len(myNewList) > 1:
-              sunitDict['textId'] = myNewList[0] + myNewList[1]
+              sunitDict['textId'] = myNewList[0] + ':' + myNewList[1]
               tType = myNewList[1]
               if re.match("s", tType):
                   sunitDict['textType'] = "spoken"
