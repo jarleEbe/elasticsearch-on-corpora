@@ -14,7 +14,7 @@ sys.setdefaultencoding("utf-8")
 # FUNCTIONS
 def parse_bnc_header(directory, headerDir, text):
 
-   local_file = directory + text
+   local_file = directory + '/' + text
 
    local_file = local_file.replace("segmented", headerDir)
 #   print(local_file)

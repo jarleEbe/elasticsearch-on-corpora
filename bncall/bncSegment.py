@@ -13,9 +13,14 @@ sys.setdefaultencoding("utf-8")
 # FUNCTIONS
 
 def segment_text(directory, text):
-   local_file = directory + '/' + text
-   output_directory = 'segmented' + '/'
+   local_file = directory + text
+   output_directory = directory + 'segmented' + '/'
 
+   output_directory = output_directory.replace("/clean", "")
+
+#   print(local_file)
+#   print(output_directory)
+#   return
    # Generate output file (new_file)
    outfile = text
    outfile = outfile.replace(".xml", "_seg.txt")
@@ -91,11 +96,18 @@ def segment_text(directory, text):
 
 
 #MAIN
+
+if len(sys.argv) < 1:
+    print("Need input directory")
+    sys.exit()
+
+mystartdir = sys.argv[1]
+
 xml_files = re.compile("\.xml$", flags=re.IGNORECASE)
 segmented = re.compile("segmented", flags=re.IGNORECASE)
 
-print ("Start ...")
-for dirpath, dirs, files in os.walk("clean/"):
+print ("Start segmenting ...")
+for dirpath, dirs, files in os.walk(mystartdir):
 #   print (dirpath)
 #   print (dirs)
    for file in files:
@@ -103,4 +115,4 @@ for dirpath, dirs, files in os.walk("clean/"):
          print (file)
 #         print (dirpath)
          return_value = segment_text(dirpath, file)
-print ("End.")
+print ("Segmentation end.")
