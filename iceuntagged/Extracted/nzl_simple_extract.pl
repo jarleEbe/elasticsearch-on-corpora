@@ -121,7 +121,6 @@ open(OUT, ">$output");
 binmode OUT, ":utf8";
 foreach my $sentence (@newcontent)
 {
-	$sentence = &split_contractions($sentence);
 	if ($sentence =~ /\n/ && $sentence !~ /\t/)
 	{
 		print LOG "1x: $sentence\n";		
@@ -132,28 +131,3 @@ close(OUT);
 close(LOG);
 print "Check log fila, nzl-log.txt\n";
 exit;
-
-sub split_contractions
-{
-	my ($splitted) = @_;
-	
-	$splitted =~ s/Let\'s/Let \'s/g;
-	$splitted =~ s/Let\'m/Let \'m/g;
-	$splitted =~ s/let\'s/let \'s/g;
-	$splitted =~ s/let\'m/let \'m/g;
-
-	$splitted =~ s/([I]{1})(\'m)(\s|\W)/$1 $2$3/gi;
-
-	$splitted =~ s/([[:alpha:]]{1})(\'n)(\s|\W)/$1 \'n$3/gi;
-	$splitted =~ s/([[:alpha:]]{1})(\'em)(\s|\W)/$1 \'em$3/gi;
-	
-	$splitted =~ s/([[:alpha:]]{1})(n\'t)(\s|\W)/$1 $2$3/gi;
-#	$splitted =~ s/([[:alpha:]]{1})(\'ll)(\s|\W)/$1 $2$3/gi;
-#	$splitted =~ s/([[:alpha:]]{1})(\'ve)(\s|\W)/$1 $2$3/gi;
-#	$splitted =~ s/([[:alpha:]]{1})(\'d)(\s|\W)/$1 $2$3/gi;
-#	$splitted =~ s/([[:alpha:]]{1})(\'re)(\s|\W)/$1 $2$3/gi;
-
-	$splitted =~ s/(^|\s|\W)(He|She|It|he|she|it|This|That|Who|There|How|What|Where|Here|Something|Everything|Anything|this|that|who|there|how|what|where|here|something|everything|anything)\'s(\s|\W)/$1$2 \'s$3/g;
-	
-	return $splitted;
-}
