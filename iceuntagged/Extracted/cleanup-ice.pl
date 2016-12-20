@@ -52,9 +52,13 @@ foreach my $line (@content)
 	{
 		$line = &JAMclean($line);
 	}
+	elsif ($whichICE eq 'USA')
+	{
+		$line = &USAclean($line);
+	}
 	else
 	{
-		print "UNknown ICE: $whichICE\n";	
+		print "Unknown ICE: $whichICE\n";	
 	}
 	
 	if ($line =~ /<([A-Za-z0-9])+?>/ || $line =~ /\&([^ ]{1,20});/ || $line =~ /#([A-Za-z0-9]+?)#/  || $line =~ /([A-Za-z0-9]+)>/)
@@ -280,6 +284,7 @@ sub cleanUp
 	$toclean =~ s/\&less-than;/</g;
 	$toclean =~ s/\&smaller-than;/</g;
 	$toclean =~ s/\&greater-than;/</g;
+	$toclean =~ s/\&percent;/\%/g;
 
 	$toclean =~ s/&circle;/°/g;
 
@@ -589,7 +594,6 @@ sub HKGclean
 	$toclean =~ s/\&asterisk;/\*/g;
 	$toclean =~ s/\&ampersand;/\&/g;
 	$toclean =~ s/\&atsign;/\&/g;
-	$toclean =~ s/\&percent;/\%/g;
 	$toclean =~ s/\&semi;/;/g;
 	$toclean =~ s/\&scol;/;/g;
 	$toclean =~ s/\&equals;/\=/g;
@@ -1083,6 +1087,41 @@ sub IRLclean
 	
 	return $toclean;
 }
+
+sub USAclean
+{
+	my $toclean = shift(@_);
+
+#	$toclean =~ s/<O>(.+)<O>/ \#\.\.\.\# /g;
+#	$toclean =~ s/<O>(.+)<\/O/ \#\.\.\.\# /g;
+
+#	$toclean =~ s/<O>//g;
+#	$toclean =~ s/<\/O>//g;
+	
+	$toclean =~ s/<p>//gi;
+	$toclean =~ s/<\/p>//gi;
+	$toclean =~ s/<h>//gi;
+	$toclean =~ s/<\/h>//ig;
+
+	$toclean =~ s/<quote>//g;
+	$toclean =~ s/<\/quote>//g;
+
+	$toclean =~ s/<title>//g;
+	$toclean =~ s/<\/title>//g;
+
+	$toclean =~ s/<h1>//g;
+	$toclean =~ s/<\/h1>//g;
+
+	$toclean =~ s/<h2>//g;
+	$toclean =~ s/<\/h2>//g;
+
+	$toclean =~ s/<\/tag>//g;
+
+	$toclean =~ s/([ ]){2,5}/ /g;
+	
+	return $toclean;
+}
+
 
 sub split_contractions
 {
