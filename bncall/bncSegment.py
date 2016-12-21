@@ -12,6 +12,71 @@ sys.setdefaultencoding("utf-8")
 
 # FUNCTIONS
 
+def fix_contractions(word, lemma, pos):
+
+#INNIT
+      innitW = re.compile("innit", re.IGNORECASE)
+      innitL = re.compile("IN N IT")
+      innitP = re.compile("VBZ XX0 PNP")
+
+      if re.search(innitW, word) and re.search(innitL, lemma) and re.search(innitP, pos):
+            lemma = re.sub(innitL, "INNIT", lemma)
+            pos = re.sub(innitP, "VBZ-XX0-PNP", pos)
+
+#DUNNO
+      dunnoW = re.compile("dunno", re.IGNORECASE)
+      dunnoL = re.compile("DO N NO")
+      dunnoP = re.compile("VDB XX0 VVI")
+
+      if re.search(dunnoW, word) and re.search(dunnoL, lemma) and re.search(dunnoP, pos):
+            lemma = re.sub(dunnoL, "DUNNO", lemma)
+            pos = re.sub(dunnoP, "VDB-XX0-VVI", pos)
+
+#GONNA
+      gonnaW = re.compile("gonna", re.IGNORECASE)
+      gonnaL = re.compile("GON NA")
+      gonnaP = re.compile("VVG TO0")
+
+      if re.search(gonnaW, word) and re.search(gonnaL, lemma) and re.search(gonnaP, pos):
+            lemma = re.sub(gonnaL, "GONNA", lemma)
+            pos = re.sub(gonnaP, "VVG-TO0", pos)
+
+#WANNA
+      wannaW = re.compile("wanna", re.IGNORECASE)
+      wannaL = re.compile("WAN NA")
+      wannaP = re.compile("VVB TO0")
+
+      if re.search(wannaW, word) and re.search(wannaL, lemma) and re.search(wannaP, pos):
+            lemma = re.sub(wannaL, "WANNA", lemma)
+            pos = re.sub(wannaP, "VVB-TO0", pos)
+
+      word = re.sub('[.,;:<>$£€¢=!?#_@&%+~/—–‘’“”§¶…`´\"\\{\\}\\[\\]\\(\\)\\*]', '',word)    
+      mixed = ''
+      wordArr = word.split()
+      lemmaArr = lemma.split()
+      posArr = pos.split()
+      numWord = len(word.split())
+      numLemmas = len(lemma.split())
+      numPOS = len(pos.split())
+      for ind in range(0, numWord - 1):
+            mixed = wordArr[ind]
+            if ind <= numLemmas:
+                  mixed = mixed + ' ' + lemmaArr[ind]
+            if ind <= numPOS:
+                  mixed = mixed + ' ' + posArr[ind]
+      
+#      if numWord != numPOS:
+#            print(word, end="\n")
+#            print(lemma, end="\n")
+#            print(pos, end="\n")
+
+#      if numWord != numPOS and numLemmas != numPOS:
+#            print(word, end="\n")
+#            print(pos, end="\n")
+
+      return lemma, pos, mixed
+
+
 def segment_text(directory, text):
    local_file = directory + text
    output_directory = directory + 'segmented' + '/'
@@ -45,9 +110,15 @@ def segment_text(directory, text):
       rawtext = line
       new_file.write(rawtext)
       new_file.write("\t")
-      rawtext = re.sub(r'<([^>]+?)>', '', rawtext)
+      rawtext = re.sub(r'">([\']){1,1}([A-Za-z ]{1,1})', r'"> \1\2', rawtext)
+#      rawtext = rawtext.replace(">n't", "> n't")
+#      rawtext = rawtext.replace(">N'T", "> N'T")
+      rawtext = re.sub(r'<([^>]+?)>', ' ', rawtext)
+      rawtext = re.sub(r'\s\s+', ' ', rawtext)
+      rawtext = rawtext.strip()
       new_file.write(rawtext)
       new_file.write("\t")
+      wordforms = ''
       lemmas = ''
       parts_of_speech = '';
       mixed = ''
@@ -55,12 +126,29 @@ def segment_text(directory, text):
          wtemp = word.text
          if wtemp:
             wtemp = wtemp.lower()
+            if wtemp == ' ':
+                  wtemp = 'XXX'
          else:
-            wtemp = ''
+            wtemp = 'XXX'
          mixed = mixed + wtemp + ' '
+         wordforms = wordforms + wtemp + ' '
 
-         myLemma = word.get('lemma', 'YYY')
-         myPos = word.get('pos', 'ZZZ')
+#         myLemma = word.get('lemma', 'YYY')
+#         myPos = word.get('pos', 'ZZZ')
+
+         if word.attrib['lemma']:
+               myLemma = word.attrib['lemma']
+               if myLemma == ' ':
+                     myLemma = 'YYY'
+         else:
+               myLemma = 'YYY'
+
+         if word.attrib['pos']:
+               myPos = word.attrib['pos']
+               if myPos == ' ':
+                     myPos = 'ZZZ'
+         else:
+               myPos = 'ZZZ'
 
          if myLemma == 'YYY':
             mixed = mixed + myLemma + ' '
@@ -78,10 +166,36 @@ def segment_text(directory, text):
             parts_of_speech = parts_of_speech + temp + ' '
             mixed = mixed + temp + ' '
             
+      wordforms = re.sub(r' $', '', wordforms)
       lemmas = re.sub(r' $', '', lemmas)
       parts_of_speech = re.sub(r' $', '', parts_of_speech)
       mixed = re.sub(r' $', '', mixed)
-      mixed = re.sub(r'\s+', ' ', mixed)
+      mixed = re.sub(r'\s\s+', ' ', mixed)
+
+#      if re.search("dunno", rawtext, re.IGNORECASE) or re.search("gonna", rawtext, re.IGNORECASE) or re.search("wanna", rawtext, re.IGNORECASE) or re.search("innit", rawtext, re.IGNORECASE):
+#            lemmas, parts_of_speech, mixed = fix_contractions(rawtext, lemmas, parts_of_speech)
+# - 
+#      rawtext = re.sub('[.,;:<>$£€¢=!?#_@&%+~/—–‘’“”§¶…`´\"\\{\\}\\[\\]\\(\\)\\*]', '', rawtext)
+#      rawtext = re.sub('([.,;:<>!?#_@&~/—–‘’“”§¶…`´\"\\{\\}\\[\\]\\(\\)]+)', '', rawtext)
+#      rawtext = re.sub(r'\s\s+', ' ', rawtext)
+#      rawtext = re.sub(' -$', '', rawtext)
+#      rawtext = re.sub(' - ', ' ', rawtext)
+#      rawtext = re.sub('^- ', '', rawtext)
+#      rawtext = re.sub(" '$", '', rawtext)
+#      rawtext = re.sub("^' ", "", rawtext)
+#      rawtext = re.sub(" ' ", " ", rawtext)
+#      rawtext = re.sub('^ ', '', rawtext)
+      numWord = len(wordforms.split())
+      numLemmas = len(lemmas.split())
+      numPOS = len(parts_of_speech.split())
+      if numWord != numLemmas:
+            print(wordforms, end="\n")
+            print(lemmas, end="\n")
+            print(parts_of_speech, end="\n")
+
+      if numWord != numPOS and numLemmas != numPOS:
+            print(wordforms, end="\n")
+            print(parts_of_speech, end="\n")
 
       new_file.write(lemmas)
       new_file.write("\t")

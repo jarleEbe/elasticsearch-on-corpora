@@ -13,16 +13,21 @@ sys.setdefaultencoding("utf-8")
 
 def create_index(es, index_name):
 
-   setting = {"settings":{"analysis":{"analyzer":{"delimiters_lower":{"type":"pattern","pattern":"(([.,;:\"<>$£+=!?`\{\}\{\}\[\]\*\(\)\?/\\#_@]+)|(\s+))", "lowercase": "true"},"delimiters_upper":{"type":"pattern","pattern":"(([.,;:\"<>$£+=!?`\{\}\{\}\[\]\*\(\)\?/\\#_@]+)|(\s+))", "lowercase": "false"}}}}}
+   settingsfile = 'analyzer-settings.json'
+   mySetting = ''
+   with open(settingsfile, 'r') as infile:
+      mySetting = infile.read()
 
-   result = es.indices.create(index=index_name, body=setting)
+#   setting = {"settings":{"analysis":{"analyzer":{"delimiters_lower":{"type":"pattern","pattern":"(([.,;:\"<>$£+=!?`\{\}\{\}\[\]\*\(\)\?/\\#_@]+)|(\s+))", "lowercase": "true"},"delimiters_upper":{"type":"pattern","pattern":"(([.,;:\"<>$£+=!?`\{\}\{\}\[\]\*\(\)\?/\\#_@]+)|(\s+))", "lowercase": "false"}}}}}
+
+   result = es.indices.create(index=index_name, body=mySetting)
 
    return result
 
 
 def sunit_create_mapping(es, index_name, document_type, field, analyser):
 
-    mapping = {document_type:{"properties":{field:{"type":"string", "store":"yes", "index":"analyzed", "analyzer":analyser, "term_vector":"with_positions_offsets"}}}}
+    mapping = {document_type:{"properties":{field:{"type":"text", "store":"yes", "index":"analyzed", "analyzer":analyser, "term_vector":"with_positions_offsets"}}}}
 
     result = es.indices.put_mapping(index=index_name, doc_type=document_type, body=mapping)
 
@@ -31,8 +36,7 @@ def sunit_create_mapping(es, index_name, document_type, field, analyser):
 
 def create_mapping(es, index_name, document_type, field):
 
-    mapping = {document_type:{"properties":{field:{"type":"string", "store":"yes", "index":"no"}}}}
-#    mapping = {document_type:{"properties":{field:{"type":"string", "store":"yes"}}}}
+    mapping = {document_type:{"properties":{field:{"type":"keyword", "store":"yes", "index":"no"}}}}
 
     result = es.indices.put_mapping(index=index_name, doc_type=document_type, body=mapping)
 
@@ -48,8 +52,7 @@ def integer_create_mapping(es, index_name, document_type, field):
 
 def create_orig_mapping(es, index_name, document_type, field):
 
-    mapping = {document_type:{"properties":{field:{"type":"string", "store":"yes", "index":"no"}}}}
-#    mapping = {document_type:{"properties":{field:{"type":"string", "store":"yes"}}}}
+    mapping = {document_type:{"properties":{field:{"type":"text", "store":"yes", "index":"no"}}}}
 
     result = es.indices.put_mapping(index=index_name, doc_type=document_type, body=mapping)
 

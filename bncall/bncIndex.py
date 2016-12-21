@@ -107,9 +107,9 @@ def split_and_index_text(directory, text, es, esIndex, esType ):
          sunitJSON = json.dumps(sunitDict)
          indexed = add_data_to_index(es, esIndex, esType, sunitJSON)
       elif len(myList) < 6:
-         print("Something not right (3): ", end="")
-         print(len(myList), end=" ")
-         print(line, end="\n")
+#         print("Something not right (3): ", end="")
+#         print(len(myList), end=" ")
+#         print(line, end="\n")
          sunitDict['sunitId'] = myList[0]
          sunitDict['origText'] = myList[1]
          sunitDict['rawText'] = myList[2]
