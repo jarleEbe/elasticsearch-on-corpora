@@ -115,6 +115,12 @@ def segment_text(directory, text):
 #      rawtext = rawtext.replace(">N'T", "> N'T")
       rawtext = re.sub(r'<([^>]+?)>', ' ', rawtext)
       rawtext = re.sub(r'\s\s+', ' ', rawtext)
+      rawtext = re.sub(r' ,', ',', rawtext)
+      rawtext = re.sub(r' \.', '.', rawtext)
+      rawtext = re.sub(r' \?', '?', rawtext)
+      rawtext = re.sub(r' ;', ';', rawtext)
+      rawtext = re.sub(r' \!', '!', rawtext)
+      rawtext = re.sub(r' :', ':', rawtext)
       rawtext = rawtext.strip()
       new_file.write(rawtext)
       new_file.write("\t")
@@ -133,44 +139,44 @@ def segment_text(directory, text):
          mixed = mixed + wtemp + ' '
          wordforms = wordforms + wtemp + ' '
 
-#         myLemma = word.get('lemma', 'YYY')
-#         myPos = word.get('pos', 'ZZZ')
+         myLemma = ''
+         myPos = ''
 
          if word.attrib['lemma']:
                myLemma = word.attrib['lemma']
                if myLemma == ' ':
-                     myLemma = 'YYY'
+                     mixed = mixed + 'YYY' + ' '
+               else:
+                     myLemma = myLemma.upper()
+                     lemmas = lemmas + myLemma + ' '
+                     mixed = mixed + myLemma + ' '                      
          else:
-               myLemma = 'YYY'
+               mixed = mixed + 'YYY' + ' '
 
          if word.attrib['pos']:
                myPos = word.attrib['pos']
                if myPos == ' ':
-                     myPos = 'ZZZ'
+                     mixed = mixed + 'ZZZ' + ' '
+               else:
+                     myPos = myPos.upper()
+                     parts_of_speech = parts_of_speech + myPos + ' '
+                     mixed = mixed + myPos + ' '
          else:
-               myPos = 'ZZZ'
-
-         if myLemma == 'YYY':
-            mixed = mixed + myLemma + ' '
-         else:
-            temp = word.attrib['lemma']
-            temp = temp.upper()
-            lemmas = lemmas + temp + ' '
-            mixed = mixed + temp + ' '
-
-         if myPos == 'ZZZ':
-            mixed = mixed + myPos + ' '
-         else:
-            temp = word.attrib['pos']
-            temp = temp.upper()
-            parts_of_speech = parts_of_speech + temp + ' '
-            mixed = mixed + temp + ' '
-            
+               mixed = mixed + 'ZZZ' + ' '
+           
       wordforms = re.sub(r' $', '', wordforms)
+
       lemmas = re.sub(r' $', '', lemmas)
+      lemmas = re.sub(r'\s\s+', ' ', lemmas)
+      lemmas = lemmas.strip()
+
       parts_of_speech = re.sub(r' $', '', parts_of_speech)
+      parts_of_speech = re.sub(r'\s\s+', ' ', parts_of_speech)
+      parts_of_speech = parts_of_speech.strip()
+
       mixed = re.sub(r' $', '', mixed)
       mixed = re.sub(r'\s\s+', ' ', mixed)
+      mixed = mixed.strip()
 
 #      if re.search("dunno", rawtext, re.IGNORECASE) or re.search("gonna", rawtext, re.IGNORECASE) or re.search("wanna", rawtext, re.IGNORECASE) or re.search("innit", rawtext, re.IGNORECASE):
 #            lemmas, parts_of_speech, mixed = fix_contractions(rawtext, lemmas, parts_of_speech)
