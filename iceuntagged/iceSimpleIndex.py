@@ -36,6 +36,7 @@ def split_and_index_text(es, theIndex, theType, text, code, region, lid):
           sunitDict['areaCode'] = code
           sunitDict['region'] = region
           sunitDict['rawText'] = myList[1]
+          sunitDict['origText'] = myList[1]
           tempid = myList[0]
           sunitDict['sunitId'] = tempid
           myNewList = tempid.split(":")
@@ -61,6 +62,7 @@ def split_and_index_text(es, theIndex, theType, text, code, region, lid):
           sunitDict['areaCode'] = code
           sunitDict['region'] = region
           sunitDict['rawText'] = ""
+          sunitDict['origText'] = ""
           tempid = myList[0]
           sunitDict['sunitId'] = tempid
           myNewList = tempid.split(":")

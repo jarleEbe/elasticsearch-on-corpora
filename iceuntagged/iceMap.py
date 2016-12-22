@@ -25,7 +25,7 @@ def create_index(es, index_name):
 
 def sunit_create_mapping(es, index_name, document_type, field, analyser):
 
-    mapping = {document_type:{"properties":{field:{"type":"string", "store":"yes", "index":"analyzed", "analyzer":analyser, "term_vector":"with_positions_offsets"}}}}
+    mapping = {document_type:{"properties":{field:{"type":"text", "store":"yes", "index":"analyzed", "analyzer":analyser, "term_vector":"with_positions_offsets"}}}}
 
     result = es.indices.put_mapping(index=index_name, doc_type=document_type, body=mapping)
 
@@ -34,7 +34,7 @@ def sunit_create_mapping(es, index_name, document_type, field, analyser):
 
 def create_mapping(es, index_name, document_type, field):
 
-    mapping = {document_type:{"properties":{field:{"type":"string", "store":"yes", "index":"not_analyzed"}}}}
+    mapping = {document_type:{"properties":{field:{"type":"keyword", "store":"yes", "index":"not_analyzed"}}}}
 
     result = es.indices.put_mapping(index=index_name, doc_type=document_type, body=mapping)
 
@@ -48,6 +48,13 @@ def integer_create_mapping(es, index_name, document_type, field):
 
     return result
 
+def create_orig_mapping(es, index_name, document_type, field):
+    
+    mapping = {document_type:{"properties":{field:{"type":"text", "store":"yes", "index":"no"}}}}
+
+    result = es.indices.put_mapping(index=index_name, doc_type=document_type, body=mapping)
+
+    return result
 
 #MAIN
 #res = requests.get('http://localhost:9200')
@@ -65,6 +72,8 @@ mapped = sunit_create_mapping(es, myIndex, myType, "rawText", "delimiters_lower"
 #mapped = sunit_create_mapping(es, myIndex, myType, "lemma", "delimiters_upper")
 #mapped = sunit_create_mapping(es, myIndex, myType, "pos", "delimiters_upper")
 #mapped = sunit_create_mapping(es, myIndex, myType, "mixed", "delimiters_upper")
+
+mapped = create_orig_mapping(es, myIndex, myType, "origText")
 
 mapped = create_mapping(es, myIndex, myType, "textId")
 mapped = create_mapping(es, myIndex, myType, "sunitId")
