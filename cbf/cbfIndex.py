@@ -1,9 +1,15 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
+# pylint:disable=C0103
+
 from __future__ import print_function
 
 # if we want to give our script parameters, we need a special library
-import sys, os, re, json, xmltodict
+import sys
+import os
+import re
+import json
+import xmltodict
 from elasticsearch import Elasticsearch
 
 from pprint import pprint
@@ -13,8 +19,9 @@ sys.setdefaultencoding("utf-8")
 
 # FUNCTIONS
 
+
 def find_decade(year):
-    
+
     decade = ''
 
     try:
@@ -56,9 +63,11 @@ def find_decade(year):
 
     return decade
 
+
 def parse_bnc_header(directory, headerDir, text):
 
-    local_file = directory + '/' + text
+    local_file = directory + text
+#    local_file = directory + '/' + text
 
     local_file = local_file.replace("segmented", headerDir)
 #   print(local_file)
@@ -70,7 +79,7 @@ def parse_bnc_header(directory, headerDir, text):
     myJSON = json.dumps(d)
     jsonXML = json.loads(myJSON)
 
-    idNo= ''
+    idNo = ''
     title = ''
     publicationPlace = ''
     publisher = ''
@@ -121,14 +130,17 @@ def add_data_to_index(es, index_name, document_type, data):
 
     result = es.index(index=index_name, doc_type=document_type, body=data, request_timeout=30)
 
+#    with open('data.txt', 'w') as outfile:
+#        json.dump(data, outfile)
     return result
+
 
 def split_and_index_text(directory, text, es, esIndex, esType):
     local_file = directory + '/' + text
 
    # open the file for reading
     with open(local_file, 'r') as infile:
-        content = infile.readlines() 
+        content = infile.readlines()
 
     textid = text
     textid = textid.replace("_seg.txt", "")
@@ -157,10 +169,10 @@ def split_and_index_text(directory, text, es, esIndex, esType):
 #         sunitDict['mixed'] = ""
             sunitJSON = json.dumps(sunitDict)
             indexed = add_data_to_index(es, esIndex, esType, sunitJSON)
-        elif len(myList) <= 2:
-            print("Something not right (2): ", end="")
-            print(len(myList), end=" ")
-            print(line, end="\n")
+        elif len(myList) >= 2:
+#            print("Something not right (2): ", end="")
+#            print(len(myList), end=" ")
+#            print(line, end="\n")
             sunitDict['sunitId'] = myList[0]
             sunitDict['origText'] = myList[1]
             sunitDict['rawText'] = myList[1]
@@ -176,7 +188,7 @@ def split_and_index_text(directory, text, es, esIndex, esType):
 
     return "ok"
 
-#MAIN
+# MAIN
 if len(sys.argv) <= 1:
     print("Need input directory, e.g. /../../data/ ")
     sys.exit()
@@ -185,12 +197,12 @@ datadir = sys.argv[1]
 
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
-txt_files = re.compile("\.txt", flags=re.IGNORECASE)
+txt_files = re.compile(r"\.txt$", flags=re.IGNORECASE)
 segmented = re.compile("segmented", flags=re.IGNORECASE)
 print ("Indexing ...")
 for dirpath, dirs, files in os.walk(datadir):
-    for file in files:
-        if re.search(txt_files, file) and re.search(segmented, dirpath):
-#        print(dirpath)
-            print(file)
-            return_value = split_and_index_text(dirpath, file, es, "cbf", "cbfraw")
+    for fil in files:
+        if re.search(txt_files, fil) and re.search(segmented, dirpath):
+            #        print(dirpath)
+            print(fil)
+            return_value = split_and_index_text(dirpath, fil, es, "cbf", "cbfraw")
