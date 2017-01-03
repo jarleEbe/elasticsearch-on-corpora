@@ -36,7 +36,7 @@ def sunit_create_mapping(es, index_name, document_type, field, analyser):
 
 def create_mapping(es, index_name, document_type, field):
 
-    mapping = {document_type:{"properties":{field:{"type":"keyword", "store":"yes", "index":"no"}}}}
+    mapping = {document_type:{"properties":{field:{"type":"keyword", "store":"yes", "index":"not_analyzed"}}}}
 
     result = es.indices.put_mapping(index=index_name, doc_type=document_type, body=mapping)
 
@@ -72,6 +72,7 @@ es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 created = create_index(es, myIndex)
 
 mapped = sunit_create_mapping(es, myIndex, myType, "rawText", "delimiters_lower")
+mapped = sunit_create_mapping(es, myIndex, myType, "rawWordForms", "delimiters_upper")
 mapped = sunit_create_mapping(es, myIndex, myType, "lemma", "delimiters_upper")
 mapped = sunit_create_mapping(es, myIndex, myType, "pos", "delimiters_upper")
 mapped = sunit_create_mapping(es, myIndex, myType, "mixed", "delimiters_upper")

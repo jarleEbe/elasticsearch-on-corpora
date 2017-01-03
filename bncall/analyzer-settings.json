@@ -1,0 +1,18 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "delimiters_lower": {
+          "type": "pattern",
+          "pattern": "([\\s.,;:<>$=!?#_@%+~/—–‘’“”§¶…`´\"\\{\\}\\[\\]\\(\\)\\*]+)",
+          "lowercase": "true"
+        },
+        "delimiters_upper": {
+          "type": "pattern",
+          "pattern": "([\\s.,;:<>$=!?#_@%+~/—–‘’“”§¶…`´\"\\{\\}\\[\\]\\(\\)\\*]+)",
+          "lowercase": "false"
+        }
+      }
+    }
+  }
+}
