@@ -14,6 +14,14 @@ sys.setdefaultencoding("utf-8")
 
 # FUNCTIONS
 
+def countrealWords(line):
+    words = line.split()
+    numwords = 0
+    for word in words:
+        if re.search(r'^([A-Za-z0-9])', word):
+            numwords += 1
+
+    return numwords
 
 def segment_text(directory, text):
     local_file = directory + text
@@ -33,6 +41,7 @@ def segment_text(directory, text):
     textId = text
     textId = text.replace("_clean.txt", "")
     localid = 0
+    numberofWords = 0
     for line in content:
         line = line.strip()
         localid += 1
@@ -44,10 +53,11 @@ def segment_text(directory, text):
         new_file.write("\t")
         new_file.write(line)
         new_file.write("\n")
+        numberofWords = numberofWords + countrealWords(line)
 
     new_file.close
 
-    return
+    return numberofWords
 
 
 # MAIN
@@ -62,10 +72,15 @@ txt_files = re.compile("\.txt$", flags=re.IGNORECASE)
 segmented = re.compile("segmented", flags=re.IGNORECASE)
 
 print ("Start segmenting ...")
+totwords = 0
 for dirpath, dirs, files in os.walk(mystartdir):
     for file in files:
         if re.search(txt_files, file):
             print (file)
 #         print (dirpath)
             return_value = segment_text(dirpath, file)
+            print(str(return_value))
+            totwords = totwords + return_value
 print ("Segmentation end.")
+print("Total number of words: ")
+print(str(totwords))
