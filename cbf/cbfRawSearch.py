@@ -69,11 +69,11 @@ def simple_query(es, index_name, document_type, q, max_hits, filters):
 
     print("Simple query")
 
-    size = 5
+    size = '5'
     if max_hits <= 0:
-        size = 10
+        size = '10'
     else:
-        size = max_hits
+        size = str(max_hits)
 
     FilterDict = get_filters(filters)
     theFilter = ''
@@ -112,11 +112,11 @@ def complex_query(es, index_name, document_type, q, max_hits, filters):
 
     print("Complex query")
 
-    size = 5
+    size = '5'
     if max_hits <= 0:
-        size = 10
+        size = '10'
     else:
-        size = max_hits
+        size = str(max_hits)
 
     mylist = list()
     if re.search(" ", q):
@@ -125,6 +125,13 @@ def complex_query(es, index_name, document_type, q, max_hits, filters):
     FilterDict = get_filters(filters)
     theFilter = ''
 
+#    if len(FilterDict) >= 1:
+#        theFilter = ' "filter" : [ '
+#        for key in FilterDict:
+#            theFilter = theFilter + '{ "term" : { "' + key + '" : "' + FilterDict[key] + '"}},'
+#        theFilter = re.sub(r',$', '', theFilter)
+#        theFilter = theFilter + '] '
+
     if len(FilterDict) >= 1:
         #"filter":{"bool":{"must":[{"term":{"areaCode":"sqp"}},{"term":{"textType":"spoken"}}]}}
         theFilter = ' "filter" : { "bool" : {"must": [ '
@@ -132,14 +139,24 @@ def complex_query(es, index_name, document_type, q, max_hits, filters):
             theFilter = theFilter + \
                 '{ "term" : { "' + key + '" : "' + FilterDict[key] + '"}},'
         theFilter = re.sub(r',$', '', theFilter)
-        theFilter = theFilter + ']}},'
+        theFilter = theFilter + ']}}}},'
+    else:
+        theFilter = '}},'
 
     print(theFilter)
 
+    body_start = ''
+    body_end = ''
+
     body_start = '{"from" : 0, "size" : ' + size + \
         ', "query" : { "bool" : { "must" : { "span_near" : { "clauses" : [ '
-    body_end = ' ], "slop" : 0, "in_order" : "true" }}}},' + theFilter + \
-        '"highlight" : {"pre_tags" : ["<em>"], "post_tags" :["</em>"], "fields":{"rawText":{ "type" : "plain", "number_of_fragments" : 10, "fragment_size":1000}}}}'
+    if theFilter == '}},':
+        body_end = ' ], "slop" : 0, "in_order" : "true" }}' + theFilter + ' "highlight" : {"pre_tags" : ["<em>"], "post_tags" :["</em>"], "fields":{"rawText":{ "type" : "plain", "number_of_fragments" : 10, "fragment_size":1000}}}}'
+    else:
+        body_end = ' ], "slop" : 0, "in_order" : "true" }},' + theFilter + ' "highlight" : {"pre_tags" : ["<em>"], "post_tags" :["</em>"], "fields":{"rawText":{ "type" : "plain", "number_of_fragments" : 10, "fragment_size":1000}}}}'
+
+#    body_end = ' ], "slop" : 0, "in_order" : "true" }}}},' + theFilter + \
+#        ' "highlight" : {"pre_tags" : ["<em>"], "post_tags" :["</em>"], "fields":{"rawText":{ "type" : "plain", "number_of_fragments" : 10, "fragment_size":1000}}}}'
 
     body_middle = list()
     searchterms = list()
@@ -183,12 +200,16 @@ input = sys.argv[1]
 
 max_no_hits = 0
 filters = ''
+if len(sys.argv) <= 2:
+    max_no_hits = 5
 if len(sys.argv) > 2:
     max_no_hits = sys.argv[2]
 if len(sys.argv) > 3:
     filters = sys.argv[3]
 
 print(input)
+print(max_no_hits)
+
 #res = requests.get('http://localhost:9200')
 # print(res.content)
 
