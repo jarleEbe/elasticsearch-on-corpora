@@ -20,7 +20,28 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 # FUNCTIONS
+def createCounts(totnoTexts, totnoWords, tiaar, tekstene):
 
+    outfile = open("cbf.json", 'w')
+
+    localDict = dict()
+
+    localDict['cbf'] = 'https://nabu.usit.uio.no/hf/ilos/english/cbf/cbf.json'
+    localDict['date'] = '2017-01-17'
+    localDict['noTexts'] = totnoTexts
+    localDict['totnoWords'] = totnoWords
+    localDict['Texts'] = tekstene
+    localDict['Decades'] = tiaar
+
+    json.dump(localDict, outfile, indent=4)
+#    outfile.write('{')
+#    for d in localDict:
+#        outfile.write(d)
+#        outfile.write(str(localDict[d]))
+
+#    outfile.write('}')
+
+    return "ok"
 
 def countrealWords(line):
     words = line.split()
@@ -204,16 +225,22 @@ mystartdir = sys.argv[1]
 txt_files = re.compile(r"\.txt$", flags=re.IGNORECASE)
 segmented = re.compile("segmented", flags=re.IGNORECASE)
 tiaar = dict()
+texts = dict()
 print ("Start segmenting ...")
 totwords = 0
+totfiles = 0
 for dirpath, dirs, files in os.walk(mystartdir):
     for fil in files:
         if re.search(txt_files, fil):
 #            print (fil)
 #         print (dirpath)
+            totfiles += 1
             return_value = segment_text(dirpath, fil)
+            textCode = fil
+            textCode = textCode.replace("_clean.txt", "")
             nowords = int(return_value[0])
             tiaaret = str(return_value[1])
+            texts[textCode] = nowords
             if tiaaret in tiaar:
                 nowordsintiaar = int(tiaar[tiaaret])
                 nowordsintiaar = nowordsintiaar + nowords
@@ -223,7 +250,13 @@ for dirpath, dirs, files in os.walk(mystartdir):
 #            print(str(return_value[0]))
 #            print(str(return_value[1]))
             totwords = totwords + nowords
-print(json.dumps(tiaar))
-print ("Segmentation end.")
+finished = createCounts(totfiles, totwords, tiaar, texts)
+#json_string = json.dumps(tiaar, indent=3)
+#print(json_string)
+#json_string = json.dumps(texts, indent=3)
+#print(json_string)
+#print ("Segmentation end.")
 print("Total number of words: ")
 print(str(totwords))
+print("Total number of texts: ")
+print(str(totfiles))
