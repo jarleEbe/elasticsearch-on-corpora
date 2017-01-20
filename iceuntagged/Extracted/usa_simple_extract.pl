@@ -27,6 +27,13 @@ while (my $txt = readdir(SUBDIR))
 		foreach my $line (@content)
 		{
 			chomp($line);
+#			if ($line =~ /\x19/)
+#			{
+#			    print LOG "$line\n";
+#			}
+			$line =~ s/\x19/'/g;
+			$line =~ s/\x1C//g;
+			$line =~ s/\x1D//g;
 			$line =~ s/^<I>//;
 			$line =~ s/^<p> //i;
 			$line =~ s/^<p>//i;

@@ -96,6 +96,8 @@ sub cleanUp
 	$toclean =~ s/<\/foreign>//g;
 	$toclean =~ s/<foreign\/>//g;
 
+	$toclean =~ s/ <l> //g;
+	$toclean =~ s/ <l>$//g;
 	$toclean =~ s/<l>//g;
 	$toclean =~ s/<\/l>//g;
 	
@@ -539,6 +541,7 @@ sub HKGclean
 	$toclean =~ s/<\/unc>(.+)<\/unc>/#\.\.#/g;
 	$toclean =~ s/<unclear #..# <\/unc>/#\.\.#/;
 	$toclean =~ s/unclear> two words <\/unc>/#\.\.#/;
+	$toclean =~ s/<unclear word> one word <\/unclear word>/#\.\.#/;
 	
 	$toclean =~ s/<O>//g;
 	$toclean =~ s/<\/O>//g;
@@ -563,6 +566,7 @@ sub HKGclean
 	
 	$toclean =~ s/<quote>//g;
 	$toclean =~ s/<\/quote>//g;
+	$toclean =~ s/< quote>//;
 
 	$toclean =~ s/<symbol> because <\/symbol>/\∵/;
 	
@@ -572,6 +576,7 @@ sub HKGclean
 	$toclean =~ s/unclear> A few sentences <\/unc>//;
 	
 	$toclean =~ s/<unc>//g;
+	$toclean =~ s/<\/unc>//g;
 	
 	$toclean =~ s/\&ldquo;/"/g;
 	$toclean =~ s/\&ldquuo;/"/;
@@ -612,6 +617,7 @@ sub HKGclean
 	$toclean =~ s/<Z2>//;
 	$toclean =~ s/<\/'I>//;
 	$toclean =~ s/<\/fr>//;
+	$toclean =~ s/<\/ O>//g;
 	
 	$toclean =~ s/([ ]){2,5}/ /g;
 	
@@ -1098,6 +1104,11 @@ sub USAclean
 #	$toclean =~ s/<O>//g;
 #	$toclean =~ s/<\/O>//g;
 	
+	$toclean =~ s/\x19/'/g;
+	$toclean =~ s/\x1C//g;
+	$toclean =~ s/\x1D//g;
+
+	$toclean =~ s/---/ – /g;
 	$toclean =~ s/<p>//gi;
 	$toclean =~ s/<\/p>//gi;
 	$toclean =~ s/<h>//gi;
