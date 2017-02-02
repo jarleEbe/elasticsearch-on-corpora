@@ -28,6 +28,7 @@ def segment_text(directory, text):
 
     textId = text
     textId = text.replace(".xml", "")
+    rawtext = ''
     for line in content:
         line = line.strip()
         tree = ET.fromstring(line)
@@ -37,7 +38,7 @@ def segment_text(directory, text):
         rawtext = line
         new_file.write(rawtext)
         new_file.write("\t")
-        rawtext = re.sub(r'">([\']){1,1}([A-Za-z ]{1,1})', r'"> \1\2', rawtext)
+        rawtext = re.sub(r'">([\']{1,1})([A-Za-z ]{1,1})', r'"> \1\2', rawtext)
         rawtext = re.sub(r'<([^>]+?)>', ' ', rawtext)
         rawtext = rawtext.replace('&amp;', '&')
         rawtext = re.sub(r'\s\s+', ' ', rawtext)
@@ -55,10 +56,18 @@ def segment_text(directory, text):
         lemmas = ''
         parts_of_speech = ''
         mixed = ''
+        wraw = ''
+        wtemp = ''
         for word in tree:
             wtemp = word.text
-            wtemp = wtemp.replace('&amp;', '&')
-            wraw = word.text
+            wraw = wtemp
+#            print(wraw, end="\n")
+            if wraw:
+                wraw = wraw.strip()
+                if wraw == '':
+                    wraw = 'XXX'
+            else:
+                wraw = 'XXX'
 #            rest = word.tail
 #            if rest:
 #                print(rest, end="\n")
@@ -68,7 +77,7 @@ def segment_text(directory, text):
                     wtemp = 'XXX'
             else:
                 wtemp = 'XXX'
-            if re.search(wraw, ' '):
+            if re.search(' ', wraw):
                 print('Wordform with blank: ')
                 print(wraw, end="\n")
             mixed = mixed + wtemp + ' '
@@ -80,25 +89,26 @@ def segment_text(directory, text):
             if word.attrib['lemma']:
                 myLemma = word.attrib['lemma']
                 if myLemma == ' ':
-                    mixed = mixed + 'YYY' + ' '
+                    myLemma = 'YYY'
                 else:
                     myLemma = myLemma.upper()
-                    lemmas = lemmas + myLemma + ' '
-                    mixed = mixed + myLemma + ' '
             else:
-                mixed = mixed + 'YYY' + ' '
+                myLemma = 'YYY'
+            lemmas = lemmas + myLemma + ' '
+            mixed = mixed + myLemma + ' '
 
             if word.attrib['pos']:
                 myPos = word.attrib['pos']
                 if myPos == ' ':
-                    mixed = mixed + 'ZZZ' + ' '
+                    myPos = 'ZZZ'
                 else:
                     myPos = myPos.upper()
-                    parts_of_speech = parts_of_speech + myPos + ' '
-                    mixed = mixed + myPos + ' '
             else:
-                mixed = mixed + 'ZZZ' + ' '
+                myPos = 'ZZZ'
+            parts_of_speech = parts_of_speech + myPos + ' '
+            mixed = mixed + myPos + ' '
 
+        wordforms = re.sub(r'\&amp;', '\&', wordforms)
         wordforms = re.sub(r' $', '', wordforms)
         wordforms = re.sub(r'\s\s+', ' ', wordforms)
         wordforms = wordforms.strip()
@@ -111,6 +121,7 @@ def segment_text(directory, text):
         parts_of_speech = re.sub(r'\s\s+', ' ', parts_of_speech)
         parts_of_speech = parts_of_speech.strip()
 
+        mixed = re.sub(r'\&amp;', '\&', mixed)
         mixed = re.sub(r' $', '', mixed)
         mixed = re.sub(r'\s\s+', ' ', mixed)
         mixed = mixed.strip()
