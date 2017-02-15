@@ -92,10 +92,10 @@ def simple_query(es, index_name, document_type, q, max_hits, filters):
     regexpchar = re.compile('[\.\*\+\?\[\{\(\|]')
     if re.search(regexpchar, q):
         searchstring = '{"from": 0, "size": ' + size + ', "query": {"bool": {"must": [ {"regexp": {"rawText": "' + q + '"}} ]' + theFilter + \
-            '}}}'
+            '}}, "highlight": {"pre_tags": ["<em>"], "post_tags": ["</em>"], "fields": {"rawText": {"type": "plain", "number_of_fragments": 0, "fragment_size": 1000 }}}}'
     else:
         searchstring = '{"from": 0, "size": ' + size + ', "query": {"bool": {"must": [ {"match": {"rawText": "' + q + '"}} ]' + theFilter + \
-            '}}}'
+            '}}, "highlight": {"pre_tags": ["<em>"], "post_tags": ["</em>"], "fields": {"rawText": {"type": "plain", "number_of_fragments": 0, "fragment_size": 1000 }}}}'
 
     data = json.dumps({})
     tempdict = json.dumps(searchstring)
@@ -125,6 +125,13 @@ def complex_query(es, index_name, document_type, q, max_hits, filters):
     FilterDict = get_filters(filters)
     theFilter = ''
 
+#    if len(FilterDict) >= 1:
+#        theFilter = ' "filter" : [ '
+#        for key in FilterDict:
+#            theFilter = theFilter + '{ "term" : { "' + key + '" : "' + FilterDict[key] + '"}},'
+#        theFilter = re.sub(r',$', '', theFilter)
+#        theFilter = theFilter + '] '
+
     if len(FilterDict) >= 1:
         #"filter":{"bool":{"must":[{"term":{"areaCode":"sqp"}},{"term":{"textType":"spoken"}}]}}
         theFilter = ' "filter" : { "bool" : {"must": [ '
@@ -132,9 +139,9 @@ def complex_query(es, index_name, document_type, q, max_hits, filters):
             theFilter = theFilter + \
                 '{ "term" : { "' + key + '" : "' + FilterDict[key] + '"}},'
         theFilter = re.sub(r',$', '', theFilter)
-        theFilter = theFilter + ']}}}}'
+        theFilter = theFilter + ']}}}},'
     else:
-        theFilter = ''
+        theFilter = '}},'
 
     print(theFilter)
 
@@ -143,10 +150,10 @@ def complex_query(es, index_name, document_type, q, max_hits, filters):
 
     body_start = '{"from" : 0, "size" : ' + size + \
         ', "query" : { "bool" : { "must" : { "span_near" : { "clauses" : [ '
-    if theFilter == '':
-        body_end = ' ], "slop" : 0, "in_order" : "true" }}}}}'
+    if theFilter == '}},':
+        body_end = ' ], "slop" : 0, "in_order" : "true" }}' + theFilter + ' "highlight" : {"pre_tags" : ["<em>"], "post_tags" :["</em>"], "fields":{"rawText":{ "type" : "plain", "number_of_fragments" : 10, "fragment_size":1000}}}}'
     else:
-        body_end = ' ], "slop" : 0, "in_order" : "true" }},' + theFilter + '}'
+        body_end = ' ], "slop" : 0, "in_order" : "true" }},' + theFilter + ' "highlight" : {"pre_tags" : ["<em>"], "post_tags" :["</em>"], "fields":{"rawText":{ "type" : "plain", "number_of_fragments" : 10, "fragment_size":1000}}}}'
 
 #    body_end = ' ], "slop" : 0, "in_order" : "true" }}}},' + theFilter + \
 #        ' "highlight" : {"pre_tags" : ["<em>"], "post_tags" :["</em>"], "fields":{"rawText":{ "type" : "plain", "number_of_fragments" : 10, "fragment_size":1000}}}}'
@@ -261,14 +268,14 @@ for row in sunit["hits"]["hits"]:
             stringsofar = orig + '<b>' + temp
             orig = orig + '<b>'
             rest = para[ind:len(para)]
-#            print(rest)
-#            print(str(len(rest)))
+            print(rest)
+            print(str(len(rest)))
             rest = re.sub(pattern, '', rest, 1)
-#            print(rest)
-#            print(str(len(rest)))
-#            print(str(len(para)))
+            print(rest)
+            print(str(len(rest)))
+            print(str(len(para)))
             endofqueryindex = len(para) - len(rest)
-#            print(str(endofqueryindex))
+            print(str(endofqueryindex))
 #            print(temp)
 #            print(stringsofar)
 #            print(rest)
@@ -293,4 +300,20 @@ for row in sunit["hits"]["hits"]:
             orig = orig.replace('</b>', '', 1)
     else:
         print(orig)
-
+#    sentence = para[0]
+#    print(query)
+#    if re.search(pattern, para):
+#        print("Found.")
+#    replacePattern = '<b>' + query + '</b>'
+#    highlighted = re.sub(pattern, replacePattern, para)
+#    print(highlighted)
+    words = para.split()
+    for word in words:
+        word = str(word)
+        word = word.replace("<em>", "<hi>", 1)
+        word = word[::-1]
+        word = word.replace(">me/<", ">ih/<", 1)
+        word = word[::-1]
+        word = word.replace("<em>", "")
+        word = word.replace("</em>", "")
+#       print(word)

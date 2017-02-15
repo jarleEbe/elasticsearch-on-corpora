@@ -153,6 +153,12 @@ def parse_bnc_header(directory, headerDir, text):
         dateofBirth = jsonXML["TEI"]["teiHeader"]["profileDesc"][
             "particDesc"]["person"]["birth"]["date"]["#text"]
 
+    sex = sex.strip()
+    if sex != 'male' and sex != 'female':
+        print('Wrong sex:', end="")
+        print(sex, end=", ")
+        print(idNo, end="\n")
+
     myLocalDict = dict()
     myLocalDict['textId'] = idNo
     myLocalDict['author'] = author
