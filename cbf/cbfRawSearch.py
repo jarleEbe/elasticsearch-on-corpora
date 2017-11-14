@@ -244,6 +244,7 @@ for row in sunit["hits"]["hits"]:
 #    print("\n")
 #    para = row["highlight"]["rawText"]
     para = row["_source"]["rawText"]
+    para = para + ' '
     print(para)
     ind = 0
 #    query = ' ' + query + ' '
@@ -272,10 +273,15 @@ for row in sunit["hits"]["hits"]:
 #            print(temp)
 #            print(stringsofar)
 #            print(rest)
+        print(str(ind))
+        print(str(endofqueryindex))
         if ind == endofqueryindex:
             orig = orig + '</b>'
         orig = orig + c
         ind += 1
+    print(str(ind))
+    print(str(endofqueryindex))
+#    if ind == endofqueryindex and 
 #    print(str(numberofmatches))
 #    print("\n")
     if numberofmatches > 1:

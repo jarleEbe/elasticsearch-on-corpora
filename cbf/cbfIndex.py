@@ -32,7 +32,7 @@ def find_decade(year):
         return decade
 
     if type(intyear) == int:
-        if intyear > 1900 and intyear < 1910:
+        if intyear >= 1900 and intyear < 1910:
             decade = '1900'
         elif intyear > 1909 and intyear < 1920:
             decade = '1910'
@@ -58,6 +58,8 @@ def find_decade(year):
             decade = '2010'
         elif intyear > 2019 and intyear < 2040:
             decade = '2020'
+        else:
+            decade = 'unknown'
     else:
         decade = 'unknown'
 
@@ -158,9 +160,9 @@ def split_and_index_text(directory, text, es, esIndex, esType):
         sunitDict['localId'] = lid
 #      print(myList[0])
         if len(myList) < 1:
-            print("Something not right (1): ", end="")
-            print(len(myList), end=" ")
-            print(line, end="\n")
+#            print("Something not right (1): ", end="")
+#            print(len(myList), end=" ")
+#            print(line, end="\n")
             sunitDict['sunitId'] = myList[0]
             sunitDict['origText'] = ""
             sunitDict['rawText'] = ""

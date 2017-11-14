@@ -13,6 +13,7 @@ import re
 import json
 import xmltodict
 import pprint
+import datetime
 
 #from xml.etree import ElementTree as ET
 
@@ -20,24 +21,32 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 # FUNCTIONS
-def createCounts(totnoTexts, totnoWords, tiaar, tekstene):
+def createCounts(totnoTexts, totnoWords, tiaar, tekstene, male, female):
 
     outfile = open("cbf.json", 'w')
 
+    now = datetime.datetime.now()
+    date = now.strftime("%Y-%m-%d")
     localDict = dict()
 
+    localDict = json.loads(tekstene)
     localDict['cbf'] = 'https://nabu.usit.uio.no/hf/ilos/english/cbf/cbf.json'
-    localDict['date'] = '2017-01-17'
+    localDict['date'] = date
     localDict['noTexts'] = totnoTexts
+    localDict['male'] = male
+    localDict['female'] = female
     localDict['totnoWords'] = totnoWords
-    localDict['Texts'] = tekstene
+#    localDict['Texts'] = tekstene
     localDict['Decades'] = tiaar
-
     json.dump(localDict, outfile, indent=4)
-#    outfile.write('{')
-#    for d in localDict:
-#        outfile.write(d)
-#        outfile.write(str(localDict[d]))
+
+    decadesfile = open("cbfdecades.csv", "w")
+    for aar in sorted(tiaar):
+        decadesfile.write(aar)
+        decadesfile.write(",")
+        temp = str(tiaar[aar])
+        decadesfile.write(temp)
+        decadesfile.write("\n")
 
 #    outfile.write('}')
 
@@ -47,7 +56,8 @@ def countrealWords(line):
     words = line.split()
     numwords = 0
     for word in words:
-        if re.search(r'^([A-Za-z0-9])', word):
+#        if re.search(r'^([A-Za-z0-9])', word):
+        if re.search(r'([A-Za-z0-9])', word):
             numwords += 1
 
     return numwords
@@ -91,6 +101,8 @@ def find_decade(year):
             decade = '2010'
         elif intyear > 2019 and intyear < 2040:
             decade = '2020'
+        else:
+            decade = 'unknown'
     else:
         decade = 'unknown'
 
@@ -168,7 +180,7 @@ def parse_bnc_header(directory, headerDir, text):
     myLocalDict['birthDate'] = dateofBirth
 
     decade = find_decade(dateofPublication)
-    if decade == '':
+    if decade == '' or decade == 'unknown':
         print("Cannot find decade")
         print(str(myLocalDict['textId']))
     myLocalDict['decade'] = decade
@@ -187,6 +199,7 @@ def segment_text(directory, text):
     sunitDict = dict()
     sunitDict = parse_bnc_header(directory, "header", textid)
     decade = sunitDict['decade']
+    sex = sunitDict['sex']
 
     # Generate output file (new_file)
     outfile = text
@@ -204,20 +217,22 @@ def segment_text(directory, text):
     numberofWords = 0
     for line in content:
         line = line.strip()
-        localid += 1
-        line = re.sub(r'<([^>]+?)>', '', line)
-        line = line.strip()
-        new_file.write(textId)
-        new_file.write(".s")
-        new_file.write(str(localid))
-        new_file.write("\t")
-        new_file.write(line)
-        new_file.write("\n")
-        numberofWords = numberofWords + countrealWords(line)
+        if line:
+            line = re.sub(r'<([^>]+?)>', '', line)
+            line = line.strip()
+            if line:
+                localid += 1
+                new_file.write(textId)
+                new_file.write(".s")
+                new_file.write(str(localid))
+                new_file.write("\t")
+                new_file.write(line)
+                new_file.write("\n")
+                numberofWords = numberofWords + countrealWords(line)
 
-    new_file.close
+    new_file.close()
 
-    return numberofWords, decade
+    return numberofWords, decade, sex
 
 
 # MAIN
@@ -232,13 +247,19 @@ txt_files = re.compile(r"\.txt$", flags=re.IGNORECASE)
 segmented = re.compile("segmented", flags=re.IGNORECASE)
 tiaar = dict()
 texts = dict()
+newtext = dict()
+jsontextstring = ''
 print ("Start segmenting ...")
 totwords = 0
 totfiles = 0
+maleorfemale = ''
+totnumberofmale = 0
+totnumberoffemale = 0
+totnumberofunknown = 0
 for dirpath, dirs, files in os.walk(mystartdir):
     for fil in files:
         if re.search(txt_files, fil):
-#            print (fil)
+            print (fil)
 #         print (dirpath)
             totfiles += 1
             return_value = segment_text(dirpath, fil)
@@ -246,17 +267,28 @@ for dirpath, dirs, files in os.walk(mystartdir):
             textCode = textCode.replace("_clean.txt", "")
             nowords = int(return_value[0])
             tiaaret = str(return_value[1])
-            texts[textCode] = nowords
+            maleorfemale = str(return_value[2])
+            texts[textCode] = nowords #Not in use
+            jsontextstring += '"' + textCode + '": {' + '"noWords" :' + str(nowords) + ', "Gender":' + '"' + maleorfemale + '",' + '"Decade":' + '"' + tiaaret + '"},'
             if tiaaret in tiaar:
                 nowordsintiaar = int(tiaar[tiaaret])
                 nowordsintiaar = nowordsintiaar + nowords
                 tiaar[tiaaret] = int(nowordsintiaar)
             else:
                 tiaar[tiaaret] = int(nowords)
+
+            if maleorfemale == 'male':
+                totnumberofmale = totnumberofmale + nowords
+            elif maleorfemale == 'female':
+                totnumberoffemale = totnumberoffemale + nowords
+            else:
+                totnumberofuknown = totnumberofunknown + nowords
 #            print(str(return_value[0]))
 #            print(str(return_value[1]))
             totwords = totwords + nowords
-finished = createCounts(totfiles, totwords, tiaar, texts)
+jsontextstring = jsontextstring[:-1]
+jsontextstring = '{"Texts": {' + jsontextstring + '}}'
+finished = createCounts(totfiles, totwords, tiaar, jsontextstring, totnumberofmale, totnumberoffemale)
 #json_string = json.dumps(tiaar, indent=3)
 #print(json_string)
 #json_string = json.dumps(texts, indent=3)
@@ -266,3 +298,5 @@ print("Total number of words: ")
 print(str(totwords))
 print("Total number of texts: ")
 print(str(totfiles))
+print("Number of unknown sex:")
+print(str(totnumberofunknown))
