@@ -57,7 +57,8 @@ def countrealWords(line):
     numwords = 0
     for word in words:
 #        if re.search(r'^([A-Za-z0-9])', word):
-        if re.search(r'([A-Za-z0-9])', word):
+#        if re.search(r"(^[A-Za-z0-9'])", word):
+        if re.match(r"([A-Za-z0-9'])", word):
             numwords += 1
 
     return numwords
