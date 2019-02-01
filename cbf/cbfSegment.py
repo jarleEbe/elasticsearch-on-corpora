@@ -21,7 +21,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 # FUNCTIONS
-def createCounts(totnoTexts, totnoWords, tiaar, tekstene, male, female):
+def createCounts(totnoTexts, totnoWords, tiaar, tekstene, male, female, genres):
 
     outfile = open("cbf.json", 'w')
 
@@ -38,6 +38,7 @@ def createCounts(totnoTexts, totnoWords, tiaar, tekstene, male, female):
     localDict['totnoWords'] = totnoWords
 #    localDict['Texts'] = tekstene
     localDict['Decades'] = tiaar
+    localDict['Genres'] = genres
     json.dump(localDict, outfile, indent=4)
 
     decadesfile = open("cbfdecades.csv", "w")
@@ -125,6 +126,9 @@ def parse_bnc_header(directory, headerDir, text):
     myJSON = json.dumps(d)
     jsonXML = json.loads(myJSON)
 
+    filename = text
+    filename = filename.replace("_header.xml", "")
+
     idNo = ''
     title = ''
     publicationPlace = ''
@@ -133,38 +137,34 @@ def parse_bnc_header(directory, headerDir, text):
     sex = ''
     dateofBirth = ''
     decade = ''
+    genre = ''
 
     if "idno" in myJSON:
-        idNo = jsonXML["TEI"]["teiHeader"][
-            "fileDesc"]["publicationStmt"]["idno"]
+        idNo = jsonXML["TEI"]["teiHeader"]["fileDesc"]["publicationStmt"]["idno"]
 
     if "author" in myJSON:
-        author = jsonXML["TEI"]["teiHeader"]["fileDesc"][
-            "sourceDesc"]["biblStruct"]["monogr"]["author"]
+        author = jsonXML["TEI"]["teiHeader"]["fileDesc"]["sourceDesc"]["biblStruct"]["monogr"]["author"]
 
     if "monogr" in myJSON:
-        title = jsonXML["TEI"]["teiHeader"]["fileDesc"][
-            "sourceDesc"]["biblStruct"]["monogr"]["title"]
+        title = jsonXML["TEI"]["teiHeader"]["fileDesc"]["sourceDesc"]["biblStruct"]["monogr"]["title"]
 
     if "pubPlace" in myJSON:
-        publicationPlace = jsonXML["TEI"]["teiHeader"]["fileDesc"][
-            "sourceDesc"]["biblStruct"]["monogr"]["imprint"]["pubPlace"]
+        publicationPlace = jsonXML["TEI"]["teiHeader"]["fileDesc"]["sourceDesc"]["biblStruct"]["monogr"]["imprint"]["pubPlace"]
 
     if "publisher" in myJSON:
-        publisher = jsonXML["TEI"]["teiHeader"]["fileDesc"][
-            "sourceDesc"]["biblStruct"]["monogr"]["imprint"]["publisher"]
+        publisher = jsonXML["TEI"]["teiHeader"]["fileDesc"]["sourceDesc"]["biblStruct"]["monogr"]["imprint"]["publisher"]
 
     if "imprint" in myJSON:
-        dateofPublication = jsonXML["TEI"]["teiHeader"]["fileDesc"][
-            "sourceDesc"]["biblStruct"]["monogr"]["imprint"]["date"]["#text"]
+        dateofPublication = jsonXML["TEI"]["teiHeader"]["fileDesc"]["sourceDesc"]["biblStruct"]["monogr"]["imprint"]["date"]["#text"]
 
     if "sex" in myJSON:
-        sex = jsonXML["TEI"]["teiHeader"][
-            "profileDesc"]["particDesc"]["person"]["sex"]
+        sex = jsonXML["TEI"]["teiHeader"]["profileDesc"]["particDesc"]["person"]["sex"]
 
     if "birth" in myJSON:
-        dateofBirth = jsonXML["TEI"]["teiHeader"]["profileDesc"][
-            "particDesc"]["person"]["birth"]["date"]["#text"]
+        dateofBirth = jsonXML["TEI"]["teiHeader"]["profileDesc"]["particDesc"]["person"]["birth"]["date"]["#text"]
+
+    if "factuality" in myJSON:
+        genre = jsonXML["TEI"]["teiHeader"]["profileDesc"]["textDesc"]["factuality"]["#text"]
 
     sex = sex.strip()
     if sex != 'male' and sex != 'female':
@@ -172,12 +172,18 @@ def parse_bnc_header(directory, headerDir, text):
         print(sex, end=", ")
         print(idNo, end="\n")
 
+    if idNo != filename:
+        print('Id and filename do not match: ', end="")
+        print(idNo, end=" <> ")
+        print(filename, end="\n")
+
     myLocalDict = dict()
     myLocalDict['textId'] = idNo
     myLocalDict['author'] = author
     myLocalDict['title'] = title
     myLocalDict['pubDate'] = dateofPublication
     myLocalDict['sex'] = sex
+    myLocalDict['genre'] = genre
     myLocalDict['birthDate'] = dateofBirth
 
     decade = find_decade(dateofPublication)
@@ -201,6 +207,7 @@ def segment_text(directory, text):
     sunitDict = parse_bnc_header(directory, "header", textid)
     decade = sunitDict['decade']
     sex = sunitDict['sex']
+    genre = sunitDict['genre']
 
     # Generate output file (new_file)
     outfile = text
@@ -233,7 +240,7 @@ def segment_text(directory, text):
 
     new_file.close()
 
-    return numberofWords, decade, sex
+    return numberofWords, decade, sex, genre
 
 
 # MAIN
@@ -249,11 +256,13 @@ segmented = re.compile("segmented", flags=re.IGNORECASE)
 tiaar = dict()
 texts = dict()
 newtext = dict()
+genres = dict()
 jsontextstring = ''
 print ("Start segmenting ...")
 totwords = 0
 totfiles = 0
 maleorfemale = ''
+genre = ''
 totnumberofmale = 0
 totnumberoffemale = 0
 totnumberofunknown = 0
@@ -269,14 +278,25 @@ for dirpath, dirs, files in os.walk(mystartdir):
             nowords = int(return_value[0])
             tiaaret = str(return_value[1])
             maleorfemale = str(return_value[2])
+            genre = str(return_value[3])
             texts[textCode] = nowords #Not in use
-            jsontextstring += '"' + textCode + '": {' + '"noWords" :' + str(nowords) + ', "Gender":' + '"' + maleorfemale + '",' + '"Decade":' + '"' + tiaaret + '"},'
+            jsontextstring += '"' + textCode + '": {' + '"noWords" :' + str(nowords) + ', "Gender":' + '"' + maleorfemale + '",' + '"Genre":' + '"' + genre + '",' + '"Decade":' + '"' + tiaaret + '"},'
+#            print(jsontextstring)
+#            jsontextstring += '"' + textCode + '": {' + '"noWords" :' + str(nowords) + ', "Gender":' + '"' + maleorfemale + '",' + '"Decade":' + '"' + tiaaret + '"},'
+#            jsontextstring += '"' + textCode + '": {' + '"noWords" :' + str(nowords) + ', "Gender":' + '"' + maleorfemale + '",' + ', "Genre":' + '"' + genre + '"' + ', "Decade":' + '"' + tiaaret + '"},'
             if tiaaret in tiaar:
                 nowordsintiaar = int(tiaar[tiaaret])
                 nowordsintiaar = nowordsintiaar + nowords
                 tiaar[tiaaret] = int(nowordsintiaar)
             else:
                 tiaar[tiaaret] = int(nowords)
+
+            if genre in genres:
+                nowordsingenre = int(genres[genre])
+                nowordsingenre = nowordsingenre + nowords
+                genres[genre] = int(nowordsingenre)
+            else:
+                genres[genre] = int(nowords)
 
             if maleorfemale == 'male':
                 totnumberofmale = totnumberofmale + nowords
@@ -286,10 +306,12 @@ for dirpath, dirs, files in os.walk(mystartdir):
                 totnumberofuknown = totnumberofunknown + nowords
 #            print(str(return_value[0]))
 #            print(str(return_value[1]))
+#            print(str(return_value[2]))
+#            print(str(return_value[3]))
             totwords = totwords + nowords
 jsontextstring = jsontextstring[:-1]
 jsontextstring = '{"Texts": {' + jsontextstring + '}}'
-finished = createCounts(totfiles, totwords, tiaar, jsontextstring, totnumberofmale, totnumberoffemale)
+finished = createCounts(totfiles, totwords, tiaar, jsontextstring, totnumberofmale, totnumberoffemale, genres)
 #json_string = json.dumps(tiaar, indent=3)
 #print(json_string)
 #json_string = json.dumps(texts, indent=3)

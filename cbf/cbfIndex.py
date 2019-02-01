@@ -89,6 +89,7 @@ def parse_bnc_header(directory, headerDir, text):
     sex = ''
     dateofBirth = ''
     decade = ''
+    genre = ''
 
     if "idno" in myJSON:
         idNo = jsonXML["TEI"]["teiHeader"]["fileDesc"]["publicationStmt"]["idno"]
@@ -114,12 +115,16 @@ def parse_bnc_header(directory, headerDir, text):
     if "birth" in myJSON:
         dateofBirth = jsonXML["TEI"]["teiHeader"]["profileDesc"]["particDesc"]["person"]["birth"]["date"]["#text"]
 
+    if "factuality" in myJSON:
+        genre = jsonXML["TEI"]["teiHeader"]["profileDesc"]["textDesc"]["factuality"]["#text"]
+
     myLocalDict = dict()
     myLocalDict['textId'] = idNo
     myLocalDict['author'] = author
     myLocalDict['title'] = title
     myLocalDict['pubDate'] = dateofPublication
     myLocalDict['sex'] = sex
+    myLocalDict['genre'] = genre
     myLocalDict['birthDate'] = dateofBirth
 
     decade = find_decade(dateofPublication)
